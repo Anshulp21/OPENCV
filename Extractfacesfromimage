@@ -1,0 +1,43 @@
+from google.colab import files
+import cv2
+import numpy as np
+from google.colab.patches import cv2_imshow
+import os
+
+# Upload the image file
+uploaded = files.upload()
+
+# Get the name of the uploaded file
+filename = list(uploaded.keys())[0]
+print(f'Uploaded file: {filename}')
+
+# Load the uploaded image
+img = cv2.imread(filename)
+
+# Load the Haar cascade for face detection
+faceCascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Detect faces
+faces = faceCascade.detectMultiScale(img, 1.1, 4)
+
+# Create a directory to save extracted faces
+output_dir = '/content/Extracted_Faces'
+os.makedirs(output_dir, exist_ok=True)
+
+i = 1
+for (x, y, w, h) in faces:
+    faceImg = img[y:y+h, x:x+w]
+    # Save the extracted face image
+    face_filename = os.path.join(output_dir, f'Face{i}.jpg')
+    cv2.imwrite(face_filename, faceImg)
+    i += 1
+
+# Display the extracted faces
+for filename in os.listdir(output_dir):
+    face_img = cv2.imread(os.path.join(output_dir, filename))
+    cv2_imshow(face_img)
+
+# Optionally, zip the extracted faces directory and download it
+import shutil
+shutil.make_archive('/content/Extracted_Faces', 'zip', output_dir)
+files.download('/content/Extracted_Faces.zip')
